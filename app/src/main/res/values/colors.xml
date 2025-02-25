@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="button_gray">#A5A5A5</color>
+    <color name="button_dark_gray">#333333</color>
+    <color name="button_orange">#FF9F07</color>
+
+    <color name="ripple_gray">#D7D7D7</color>
+    <color name="ripple_dark_gray">#6D6D6D</color>
+    <color name="ripple_orange">#EDCBA8</color>
+
+    <color name="text_black">#000000</color>
+    <color name="text_white">#FFFFFF</color>
+
+</resources>

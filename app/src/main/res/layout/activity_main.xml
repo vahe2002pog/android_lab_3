@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:orientation="vertical">
+
+            <HorizontalScrollView
+                android:id="@+id/expressionScrollView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:rotation="180"
+                android:scrollbars="none">
+
+                <TextView
+                    android:id="@+id/expressionTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:paddingEnd="16dp"
+                    android:paddingStart="16dp"
+                    android:rotation="-180"
+                    android:scrollHorizontally="true"
+                    android:textColor="@color/white"
+                    android:textSize="34sp" />
+            </HorizontalScrollView>
+
+            <HorizontalScrollView
+                android:id="@+id/resultScrollView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:rotation="180"
+                android:scrollbars="none">
+
+                <TextView
+                    android:id="@+id/resultTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:paddingEnd="24dp"
+                    android:paddingStart="24dp"
+                    android:rotation="-180"
+                    android:scrollHorizontally="true"
+                    android:text="0"
+                    android:textColor="@color/white"
+                    android:textSize="80sp" />
+            </HorizontalScrollView>
+
+        </LinearLayout>
+
+        <!-- TextView для отображения результата -->
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:stretchColumns="0,1,2,3"
+            android:paddingBottom="5dp">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <FrameLayout
+                    style="@style/ButtonFrame"
+                    android:gravity="center">
+
+                    <Button
+                        android:id="@+id/button1_1"
+                        style="@style/ButtonGray"
+                        android:text="AC" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button1_2"
+                        style="@style/ButtonGray"
+                        android:text="⁺/₋" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button1_3"
+                        style="@style/ButtonGray"
+                        android:text="%" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button1_4"
+                        style="@style/ButtonOrange"
+                        android:text="÷" />
+                </FrameLayout>
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button2_1"
+                        style="@style/ButtonDarkGray"
+                        android:text="7" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button2_2"
+                        style="@style/ButtonDarkGray"
+                        android:text="8" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button2_3"
+                        style="@style/ButtonDarkGray"
+                        android:text="9" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button2_4"
+                        style="@style/ButtonOrange"
+                        android:text="×" />
+                </FrameLayout>
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button3_1"
+                        style="@style/ButtonDarkGray"
+                        android:text="4" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button3_2"
+                        style="@style/ButtonDarkGray"
+                        android:text="5" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button3_3"
+                        style="@style/ButtonDarkGray"
+                        android:text="6" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button3_4"
+                        style="@style/ButtonOrange"
+                        android:text="−" />
+                </FrameLayout>
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button4_1"
+                        style="@style/ButtonDarkGray"
+                        android:text="1" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button4_2"
+                        style="@style/ButtonDarkGray"
+                        android:text="2" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button4_3"
+                        style="@style/ButtonDarkGray"
+                        android:text="3" />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button4_4"
+                        style="@style/ButtonOrange"
+                        android:text="+" />
+                </FrameLayout>
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <FrameLayout
+                    style="@style/ButtonFrame"
+                    android:layout_width="200dp"
+                    android:layout_span="2">
+
+                    <Button
+                        android:id="@+id/button5_1"
+                        style="@style/ButtonDarkGray"
+                        android:layout_width="185dp"
+                        android:gravity="start|center_vertical"
+                        android:paddingStart="34dp"
+                        android:text="0" />
+                </FrameLayout>
+
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button5_3"
+                        style="@style/ButtonDarkGray"
+                        android:text="," />
+                </FrameLayout>
+
+                <FrameLayout style="@style/ButtonFrame">
+
+                    <Button
+                        android:id="@+id/button5_4"
+                        style="@style/ButtonOrange"
+                        android:text="=" />
+                </FrameLayout>
+            </TableRow>
+
+        </TableLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
