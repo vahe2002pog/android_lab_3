@@ -67,15 +67,6 @@ class MainActivity : AppCompatActivity() {
 //            false
 //        }
 
-        fun isScrolledToStart(scrollView: HorizontalScrollView): Boolean {
-            return scrollView.scrollX == 0
-        }
-
-        fun performActionOnSwipeLeft() {
-            // Ваш код для действия при смахивании влево
-            Log.d("Swipe", "Смахивание влево с позиции 0")
-        }
-
 
     }
 
