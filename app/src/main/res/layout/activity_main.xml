@@ -34,11 +34,11 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:paddingEnd="16dp"
                     android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
                     android:rotation="-180"
                     android:scrollHorizontally="true"
-                    android:textColor="@color/white"
+                    android:textColor="#8E8E8E"
                     android:textSize="34sp" />
             </HorizontalScrollView>
 
@@ -244,7 +244,6 @@
                     <Button
                         android:id="@+id/button5_1"
                         style="@style/ButtonDarkGray"
-                        android:layout_width="180dp"
                         android:gravity="start|center_vertical"
                         android:paddingStart="34dp"
                         android:text="0" />

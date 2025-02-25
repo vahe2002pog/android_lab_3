@@ -1,5 +1,6 @@
 package com.example.lab3
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.MotionEvent
 import android.widget.Button
@@ -9,25 +10,72 @@ import androidx.appcompat.app.AppCompatActivity
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*
+import android.view.GestureDetector
+
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var expressionTextView: TextView
     private lateinit var resultTextView: TextView
+    private lateinit var resultScrollView: HorizontalScrollView
+    private lateinit var gestureDetector: GestureDetector
 
     private var currentInput: String = "0"
     private var expression: String = "0"
     private var result: BigDecimal? = null
     private var isResultDisplayed = false
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        resultScrollView = findViewById(R.id.resultScrollView)
+
+        gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            private val SWIPE_THRESHOLD = 200
+            private val SWIPE_VELOCITY_THRESHOLD = 200
+            private var isScrollAtZero = false
+
+            override fun onDown(e: MotionEvent): Boolean {
+                isScrollAtZero = resultScrollView.scrollX == 0
+                return super.onDown(e)
+            }
+
+            override fun onFling(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                velocityX: Float,
+                velocityY: Float
+            ): Boolean {
+                if (e1 != null && e2 != null && isScrollAtZero) {
+                    val diffX = e2.x - e1.x
+                    val diffY = e2.y - e1.y
+
+                    if (Math.abs(diffX) > Math.abs(diffY)) {
+                        if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                            if (diffX > 0) {
+                                deleteSymbol()
+                                return true
+                            }
+                        }
+                    }
+                }
+                return false
+            }
+        })
+
+        resultScrollView.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            false
+        }
+
 
         expressionTextView = findViewById(R.id.expressionTextView)
         resultTextView = findViewById(R.id.resultTextView)
 
         setupButtonListeners()
+        setButtonSize()
     }
 
     private fun setupButtonListeners() {
@@ -50,24 +98,29 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button3_4).setOnClickListener { appendOperator("-") }
         findViewById<Button>(R.id.button4_4).setOnClickListener { appendOperator("+") }
         findViewById<Button>(R.id.button5_4).setOnClickListener { calculateResult() }
-//        findViewById<HorizontalScrollView>(R.id.resultScrollView).setOnTouchListener { v, event ->
-//            var initialX = 0f
-//            when (event.action) {
-//                MotionEvent.ACTION_DOWN -> {
-//                    initialX = event.x
-//                }
-//                MotionEvent.ACTION_UP -> {
-//                    val deltaX = initialX - event.x
-//                    if (deltaX > 0 && isScrolledToStart(v as HorizontalScrollView)) {
-//                        // Ваш код для смахивания влево, если скролл на 0
-//                        deleteSymbol()
-//                    }
-//                }
-//            }
-//            false
-//        }
+    }
 
+    private fun setButtonSize(){
+        val button4_1 = findViewById<Button>(R.id.button4_1)
+        val button4_2 = findViewById<Button>(R.id.button4_2)
+        val button5_1 = findViewById<Button>(R.id.button5_1)
 
+        button4_1.post {
+            val location4_1 = IntArray(2)
+            button4_1.getLocationOnScreen(location4_1)
+            val width4_1 = button4_1.width
+
+            val location4_2 = IntArray(2)
+            button4_2.getLocationOnScreen(location4_2)
+            val width4_2 = button4_2.width
+
+            val distanceBetweenButtons = location4_2[0] - (location4_1[0] + width4_1)
+
+            val totalWidth = width4_1 + width4_2 + distanceBetweenButtons
+            val layoutParams = button5_1.layoutParams
+            layoutParams.width = totalWidth
+            button5_1.layoutParams = layoutParams
+        }
     }
 
     private fun appendNumber(number: String) {
@@ -80,7 +133,7 @@ class MainActivity : AppCompatActivity() {
         if (currentInput == "0" && number != "0") {
             currentInput = number
             expression = expression.dropLast(1) + number
-        } else if (!(currentInput == "0" && number == "0")) {
+        } else if (!(currentInput == "0" && number == "0") && !currentInput.contains("%")) {
             currentInput += number
             expression += number
         }
@@ -90,11 +143,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun appendDecimal() {
         if (isResultDisplayed) {
-            expression = ""
-            currentInput = "0."
-            expression = "0."
+            currentInput = expression
+            appendResult(expression)
             isResultDisplayed = false
-        } else if (!currentInput.contains(".")) {
+        } else if (!currentInput.contains(".") && !currentInput.contains("%") && currentInput.contains(Regex("\\d+"))) {
             currentInput += "."
             expression += "."
         }
@@ -109,7 +161,6 @@ class MainActivity : AppCompatActivity() {
             isResultDisplayed = false
         }
 
-        // Если currentInput равно "0" и нажата кнопка "-", начинаем с "-"
         if (currentInput == "0" && op == "-") {
             currentInput = "-"
             expression = "-"
@@ -147,7 +198,7 @@ class MainActivity : AppCompatActivity() {
             appendResult(expression)
             isResultDisplayed = false
         }
-        if (currentInput.isNotEmpty() && currentInput != "0") {
+        if (currentInput.isNotEmpty() && currentInput != "0"  && !currentInput.contains("%")  && currentInput.contains(Regex("\\d+"))) {
             currentInput += "%"
             expression += "%"
             appendResult(expression)
@@ -156,17 +207,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun toggleSign() {
-        val parts = expression.trim().split(" ").toMutableList()
-        appendExpression("")
+        if (currentInput != "0"){
+            val parts = expression.trim().split(" ").toMutableList()
 
-        if (parts.isNotEmpty()) {
-            val lastIndex = parts.size - 1
-            val lastPart = parts[lastIndex]
+            if (parts.isNotEmpty()) {
+                val lastIndex = parts.size - 1
+                val lastPart = parts[lastIndex]
 
-            if (lastPart.matches(Regex("-?\\d+(\\.\\d+)?"))) {
-                parts[lastIndex] = if (lastPart.startsWith("-")) lastPart.drop(1) else "-${lastPart}"
-                expression = parts.joinToString(" ")
-                appendResult(expression)
+                if (lastPart.matches(Regex("-?\\d+(\\.\\d*)?%?"))) {
+                    parts[lastIndex] = if (lastPart.startsWith("-")) lastPart.drop(1) else "-${lastPart}"
+                    expression = parts.joinToString(" ")
+                    appendResult(expression)
+                }
             }
         }
     }
@@ -174,7 +226,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun calculateResult() {
         if (expression.trim().isEmpty() || currentInput.trim().isEmpty() || !expression.contains(" ")) {
-            if (!(expression.contains(Regex("\\d+%")) && !expression.contains(Regex("[+\\-*/]")))) return
+            if (!(expression.contains(Regex("-?\\d+(\\.\\d*)?%")) && !expression.contains(Regex("(?<=.)[+\\-*/]")))) return
         }
 
         try {
@@ -196,7 +248,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun convertPercent(expr: String): String {
-        return Regex("(\\d+(?:\\.\\d+)?)%").replace(expr) { matchResult ->
+        return Regex("(\\d+(?:\\.\\d*)?)%").replace(expr) { matchResult ->
             "${matchResult.groupValues[1].toFloat() / 100}"
         }
     }
@@ -243,8 +295,8 @@ class MainActivity : AppCompatActivity() {
     private fun appendResult(result: String) {
         resultTextView.text = result.replace(".", ",").replace("*", "×").replace("/", "÷")
         resultTextView.textSize = when (result.length) {
-            in 0..6 -> 80f
-            in 7..12 -> 56f
+            in 0..5 -> 80f
+            in 6..10 -> 56f
             else -> 36f
         }
     }
@@ -262,5 +314,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun deleteSymbol(){
+        isResultDisplayed = false
+        appendExpression("")
+
+        if(expression.length == 1){
+            expression = "0"
+            currentInput = "0"
+            result = null
+        }
+        else{
+            if (expression.last() != ' '){
+                expression = expression.dropLast(1)
+                currentInput = expression.split(" ").last()
+            }
+            else
+            {
+                expression = expression.dropLast(3)
+                currentInput = expression.split(" ").last()
+            }
+        }
+        appendResult(expression)
     }
 }
