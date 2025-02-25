@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupButtonListeners() {
-        findViewById<Button>(R.id.button1_1).setOnClickListener { resetCalculator() }
+        findViewById<Button>(R.id.button1_1).setOnClickListener { appendNumber("AC") }
         findViewById<Button>(R.id.button2_1).setOnClickListener { appendNumber("7") }
         findViewById<Button>(R.id.button2_2).setOnClickListener { appendNumber("8") }
         findViewById<Button>(R.id.button2_3).setOnClickListener { appendNumber("9") }
@@ -41,8 +41,8 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button4_3).setOnClickListener { appendNumber("3") }
         findViewById<Button>(R.id.button5_1).setOnClickListener { appendNumber("0") }
         findViewById<Button>(R.id.button5_3).setOnClickListener { appendDecimal() }
-        findViewById<Button>(R.id.button1_2).setOnClickListener { toggleSign() }
-        findViewById<Button>(R.id.button1_3).setOnClickListener { appendPercent() }
+        findViewById<Button>(R.id.button1_2).setOnClickListener { appendOperator("±") }
+        findViewById<Button>(R.id.button1_3).setOnClickListener { appendOperator("%") }
         findViewById<Button>(R.id.button1_4).setOnClickListener { appendOperator("/") }
         findViewById<Button>(R.id.button2_4).setOnClickListener { appendOperator("*") }
         findViewById<Button>(R.id.button3_4).setOnClickListener { appendOperator("-") }
@@ -52,14 +52,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun appendNumber(number: String) {
         if (isResultDisplayed) {
-            expression = ""
             expressionTextView.text = ""
+            expression = ""
+            currentInput = ""
+            result = null
             isResultDisplayed = false
+        }
+
+        if (number == "AC") {
+            resetCalculator()
+            return
         }
 
         if (currentInput == "0" && number != "0") {
             currentInput = number
-            expression = expression.dropLast(1) + number
+            expression = if (expression == "0") number else expression.dropLast(1) + number
         } else if (!(currentInput == "0" && number == "0")) {
             currentInput += number
             expression += number
@@ -71,117 +78,105 @@ class MainActivity : AppCompatActivity() {
 
     private fun appendDecimal() {
         if (isResultDisplayed) {
-            expression = ""
             expressionTextView.text = ""
-            currentInput = "0,"
-            expression = "0,"
+            expression = ""
+            currentInput = ""
+            result = null
             isResultDisplayed = false
-        } else if (!currentInput.contains(",")) {
+        }
+
+        if (!currentInput.contains(",")) {
             currentInput += ","
             expression += ","
+            resultTextView.text = expression.replace(".", ",")
+            adjustTextSize()
         }
-        resultTextView.text = expression.replace(".", ",")
-        adjustTextSize()
     }
 
     private fun appendOperator(op: String) {
         if (isResultDisplayed) {
             expressionTextView.text = ""
+            expression = result?.stripTrailingZeros()?.toPlainString()?.replace(".", ",") ?: "0"
+            currentInput = expression
+            resultTextView.text = expression
             isResultDisplayed = false
         }
 
-        if (expression.isNotEmpty()) {
-            if ("+-*/".contains(expression.last())) {
-                expression = expression.dropLast(1) + op
-            } else {
-                expression += " $op "
-            }
-        } else if (op == "-") {
+        // Если введено только "0" и нажата "-", заменяем на "-"
+        if (currentInput == "0" && op == "-") {
+            currentInput = "-"
             expression = "-"
+            resultTextView.text = expression
+            adjustTextSize()
+            return
+        }
+
+        // Предотвращаем ввод подряд идущих операторов
+        if (expression.isNotEmpty() && "+-*/".contains(expression.last())) return
+
+        if (op == "±") {
+            currentInput = if (currentInput.startsWith("-")) currentInput.substring(1) else "-$currentInput"
+            val expressionTokens = expression.trim().split(" ").toMutableList()
+            expressionTokens[expressionTokens.size - 1] = currentInput
+            expression = expressionTokens.joinToString(" ")
+            resultTextView.text = expression.replace(".", ",")
+            adjustTextSize()
+            return
         }
 
         currentInput = ""
+        expression += "$op"
         resultTextView.text = expression.replace(".", ",")
         adjustTextSize()
     }
 
-    private fun appendPercent() {
-        if (currentInput.isNotEmpty() && currentInput != "0") {
-            currentInput += "%"
-            expression += "%"
-            resultTextView.text = expression.replace(".", ",")
-            adjustTextSize()
-        }
-    }
-
-    private fun toggleSign() {
-        val parts = expression.trim().split(" ").toMutableList()
-        if (parts.isNotEmpty()) {
-            val lastIndex = parts.size - 1
-            val lastPart = parts[lastIndex]
-
-            if (lastPart.matches(Regex("-?\\d+(,\\d+)?"))) {
-                parts[lastIndex] = if (lastPart.startsWith("-")) lastPart.drop(1) else "-${lastPart}"
-            } else if (lastIndex > 0 && parts[lastIndex - 1] in listOf("+", "-")) {
-                parts[lastIndex - 1] = if (parts[lastIndex - 1] == "+") "-" else "+"
-            }
-
-            expression = parts.joinToString(" ")
-            resultTextView.text = expression.replace(".", ",")
-            adjustTextSize()
-        }
-    }
-
     private fun calculateResult() {
-        if (!expression.contains(Regex("\\d"))) return
+        if (expression.trim().isEmpty() || currentInput.trim().isEmpty()) return
 
         try {
-            val formattedExpression = convertPercent(expression.replace(",", "."))
-            val result = evalExpression(formattedExpression)
+            val expressionWithDots = expression.replace(",", ".")
+            val result = evalExpression(expressionWithDots)
             this.result = result
 
+            val formattedResult = result.stripTrailingZeros().toPlainString().replace(".", ",")
+            resultTextView.text = formattedResult
             expressionTextView.text = expression.replace(".", ",")
-            adjustTextSize()
-
-            resultTextView.text = result.stripTrailingZeros().toPlainString().replace(".", ",")
-            adjustTextSize()
 
             isResultDisplayed = true
         } catch (e: ArithmeticException) {
             expressionTextView.text = "Ошибка: деление на 0"
-            adjustTextSize()
+            isResultDisplayed = false
         } catch (e: Exception) {
             expressionTextView.text = "Ошибка"
-            adjustTextSize()
-        }
-    }
-
-    private fun convertPercent(expr: String): String {
-        return Regex("(\\d+(?:\\.\\d+)?)%").replace(expr) { matchResult ->
-            "(${matchResult.groupValues[1]}/100)"
+            isResultDisplayed = false
         }
     }
 
     private fun evalExpression(expression: String): BigDecimal {
         val operators = Stack<String>()
         val values = Stack<BigDecimal>()
-
         val tokens = expression.split(" ")
 
         for (token in tokens) {
-            when {
-                token == "+" || token == "-" || token == "*" || token == "/" -> {
+            when (token) {
+                "+", "-", "*", "/" -> {
                     while (operators.isNotEmpty() && precedence(token) <= precedence(operators.peek())) {
-                        values.push(applyOperation(operators.pop(), values.pop(), values.pop()))
+                        val operator = operators.pop()
+                        val right = values.pop()
+                        val left = values.pop()
+                        values.push(applyOperation(operator, left, right))
                     }
                     operators.push(token)
                 }
-                token.isNotBlank() -> values.push(BigDecimal(token))
+                else -> values.push(BigDecimal(token))
             }
         }
 
         while (operators.isNotEmpty()) {
-            values.push(applyOperation(operators.pop(), values.pop(), values.pop()))
+            val operator = operators.pop()
+            val right = values.pop()
+            val left = values.pop()
+            values.push(applyOperation(operator, left, right))
         }
 
         return values.pop()
@@ -193,19 +188,21 @@ class MainActivity : AppCompatActivity() {
         else -> 0
     }
 
-    private fun applyOperation(operator: String, right: BigDecimal, left: BigDecimal): BigDecimal = when (operator) {
+    private fun applyOperation(operator: String, left: BigDecimal, right: BigDecimal): BigDecimal = when (operator) {
         "+" -> left.add(right)
         "-" -> left.subtract(right)
         "*" -> left.multiply(right)
-        "/" -> if (right == BigDecimal.ZERO) throw ArithmeticException("Division by zero") else left.divide(right, 10, RoundingMode.HALF_UP)
+        "/" -> if (right == BigDecimal.ZERO) throw ArithmeticException("Division by zero")
+        else left.divide(right, 10, RoundingMode.HALF_UP)
         else -> BigDecimal.ZERO
     }
 
     private fun adjustTextSize() {
-        resultTextView.textSize = when (resultTextView.text.length) {
-            in 0..6 -> 80f
-            in 7..12 -> 56f
-            else -> 36f
+        val length = resultTextView.text.length
+        resultTextView.textSize = when {
+            length > 12 -> 36f
+            length > 6 -> 56f
+            else -> 80f
         }
     }
 
@@ -214,7 +211,6 @@ class MainActivity : AppCompatActivity() {
         expression = "0"
         result = null
         expressionTextView.text = ""
-        adjustTextSize()
         resultTextView.text = "0"
         resultTextView.textSize = 80f
         isResultDisplayed = false
