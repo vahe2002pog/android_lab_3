@@ -1,7 +1,9 @@
 package com.example.lab3
 
 import android.os.Bundle
+import android.view.MotionEvent
 import android.widget.Button
+import android.widget.HorizontalScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import java.math.BigDecimal
@@ -48,14 +50,42 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button3_4).setOnClickListener { appendOperator("-") }
         findViewById<Button>(R.id.button4_4).setOnClickListener { appendOperator("+") }
         findViewById<Button>(R.id.button5_4).setOnClickListener { calculateResult() }
+        findViewById<HorizontalScrollView>(R.id.resultScrollView).setOnTouchListener { v, event ->
+            var initialX = 0f
+
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    initialX = event.x
+                }
+                MotionEvent.ACTION_UP -> {
+                    val deltaX = initialX - event.x
+                    if (deltaX > 0 && isScrolledToStart(v as HorizontalScrollView)) {
+                        // Ваш код для смахивания влево, если скролл на 0
+                        deleteSymbol()
+                    }
+                }
+            }
+            false
+        }
+
+        fun isScrolledToStart(scrollView: HorizontalScrollView): Boolean {
+            return scrollView.scrollX == 0
+        }
+
+        fun performActionOnSwipeLeft() {
+            // Ваш код для действия при смахивании влево
+            Log.d("Swipe", "Смахивание влево с позиции 0")
+        }
+
+
     }
 
     private fun appendNumber(number: String) {
         if (isResultDisplayed) {
             expression = ""
-            expressionTextView.text = ""
             isResultDisplayed = false
         }
+        appendExpression("")
 
         if (currentInput == "0" && number != "0") {
             currentInput = number
@@ -65,100 +95,119 @@ class MainActivity : AppCompatActivity() {
             expression += number
         }
 
-        resultTextView.text = expression.replace(".", ",")
-        adjustTextSize()
+        appendResult(expression)
     }
 
     private fun appendDecimal() {
         if (isResultDisplayed) {
             expression = ""
-            expressionTextView.text = ""
-            currentInput = "0,"
-            expression = "0,"
+            currentInput = "0."
+            expression = "0."
             isResultDisplayed = false
-        } else if (!currentInput.contains(",")) {
-            currentInput += ","
-            expression += ","
+        } else if (!currentInput.contains(".")) {
+            currentInput += "."
+            expression += "."
         }
-        resultTextView.text = expression.replace(".", ",")
-        adjustTextSize()
+        appendExpression("")
+        appendResult(expression)
     }
 
     private fun appendOperator(op: String) {
         if (isResultDisplayed) {
-            expressionTextView.text = ""
+            currentInput = expression
+            appendResult(expression)
             isResultDisplayed = false
         }
 
-        if (expression.isNotEmpty()) {
-            if ("+-*/".contains(expression.last())) {
-                expression = expression.dropLast(1) + op
-            } else {
-                expression += " $op "
-            }
-        } else if (op == "-") {
+        // Если currentInput равно "0" и нажата кнопка "-", начинаем с "-"
+        if (currentInput == "0" && op == "-") {
+            currentInput = "-"
             expression = "-"
+            appendResult(expression)
+            return
         }
+        if (expression.last() != '-'){
+            val expressionLast = expression.trim().last()
+            if (expression.isNotEmpty() && "+-*/".contains(expressionLast)) {
+                if (expressionLast == '*' || expressionLast == '/') {
+                    if (op == "-") {
+                        expression += op
+                    } else {
+                        expression = expression.trim().dropLast(1) + "$op "
+                    }
+                } else {
+                    expression = expression.trim().dropLast(1) + "$op "
+                }
+                appendResult(expression)
+                return
+            }
+        }
+        else return
 
+        appendExpression("")
         currentInput = ""
-        resultTextView.text = expression.replace(".", ",")
-        adjustTextSize()
+        expression += " $op "
+        appendResult(expression)
     }
 
+
     private fun appendPercent() {
+        if (isResultDisplayed) {
+            currentInput = expression
+            appendResult(expression)
+            isResultDisplayed = false
+        }
         if (currentInput.isNotEmpty() && currentInput != "0") {
             currentInput += "%"
             expression += "%"
-            resultTextView.text = expression.replace(".", ",")
-            adjustTextSize()
+            appendResult(expression)
         }
+        appendExpression("")
     }
 
     private fun toggleSign() {
         val parts = expression.trim().split(" ").toMutableList()
+        appendExpression("")
+
         if (parts.isNotEmpty()) {
             val lastIndex = parts.size - 1
             val lastPart = parts[lastIndex]
 
-            if (lastPart.matches(Regex("-?\\d+(,\\d+)?"))) {
+            if (lastPart.matches(Regex("-?\\d+(\\.\\d+)?"))) {
                 parts[lastIndex] = if (lastPart.startsWith("-")) lastPart.drop(1) else "-${lastPart}"
-            } else if (lastIndex > 0 && parts[lastIndex - 1] in listOf("+", "-")) {
-                parts[lastIndex - 1] = if (parts[lastIndex - 1] == "+") "-" else "+"
+                expression = parts.joinToString(" ")
+                appendResult(expression)
             }
-
-            expression = parts.joinToString(" ")
-            resultTextView.text = expression.replace(".", ",")
-            adjustTextSize()
         }
     }
 
+
     private fun calculateResult() {
-        if (!expression.contains(Regex("\\d"))) return
+        if (expression.trim().isEmpty() || currentInput.trim().isEmpty() || !expression.contains(" ")) {
+            if (!(expression.contains(Regex("\\d+%")) && !expression.contains(Regex("[+\\-*/]")))) return
+        }
 
         try {
-            val formattedExpression = convertPercent(expression.replace(",", "."))
+            val formattedExpression = convertPercent(expression)
             val result = evalExpression(formattedExpression)
             this.result = result
 
-            expressionTextView.text = expression.replace(".", ",")
-            adjustTextSize()
+            appendExpression(expression)
+            expression = result.stripTrailingZeros().toPlainString()
 
-            resultTextView.text = result.stripTrailingZeros().toPlainString().replace(".", ",")
-            adjustTextSize()
+            appendResult(expression)
 
             isResultDisplayed = true
         } catch (e: ArithmeticException) {
-            expressionTextView.text = "Ошибка: деление на 0"
-            adjustTextSize()
+            appendExpression("Ошибка: деление на 0")
         } catch (e: Exception) {
-            expressionTextView.text = "Ошибка"
-            adjustTextSize()
+            appendExpression("Ошибка")
         }
     }
 
     private fun convertPercent(expr: String): String {
         return Regex("(\\d+(?:\\.\\d+)?)%").replace(expr) { matchResult ->
-            "(${matchResult.groupValues[1]}/100)"
+            "${matchResult.groupValues[1].toFloat() / 100}"
         }
     }
 
@@ -201,22 +250,27 @@ class MainActivity : AppCompatActivity() {
         else -> BigDecimal.ZERO
     }
 
-    private fun adjustTextSize() {
-        resultTextView.textSize = when (resultTextView.text.length) {
+    private fun appendResult(result: String) {
+        resultTextView.text = result.replace(".", ",").replace("*", "×").replace("/", "÷")
+        resultTextView.textSize = when (result.length) {
             in 0..6 -> 80f
             in 7..12 -> 56f
             else -> 36f
         }
+    }
+    private fun appendExpression(text: String) {
+        expressionTextView.text = text.replace(".", ",").replace("*", "×").replace("/", "÷")
     }
 
     private fun resetCalculator() {
         currentInput = "0"
         expression = "0"
         result = null
-        expressionTextView.text = ""
-        adjustTextSize()
-        resultTextView.text = "0"
-        resultTextView.textSize = 80f
+        appendExpression("")
+        appendResult("0")
         isResultDisplayed = false
+    }
+
+    private fun deleteSymbol(){
     }
 }
