@@ -50,23 +50,22 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button3_4).setOnClickListener { appendOperator("-") }
         findViewById<Button>(R.id.button4_4).setOnClickListener { appendOperator("+") }
         findViewById<Button>(R.id.button5_4).setOnClickListener { calculateResult() }
-        findViewById<HorizontalScrollView>(R.id.resultScrollView).setOnTouchListener { v, event ->
-            var initialX = 0f
-
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    initialX = event.x
-                }
-                MotionEvent.ACTION_UP -> {
-                    val deltaX = initialX - event.x
-                    if (deltaX > 0 && isScrolledToStart(v as HorizontalScrollView)) {
-                        // Ваш код для смахивания влево, если скролл на 0
-                        deleteSymbol()
-                    }
-                }
-            }
-            false
-        }
+//        findViewById<HorizontalScrollView>(R.id.resultScrollView).setOnTouchListener { v, event ->
+//            var initialX = 0f
+//            when (event.action) {
+//                MotionEvent.ACTION_DOWN -> {
+//                    initialX = event.x
+//                }
+//                MotionEvent.ACTION_UP -> {
+//                    val deltaX = initialX - event.x
+//                    if (deltaX > 0 && isScrolledToStart(v as HorizontalScrollView)) {
+//                        // Ваш код для смахивания влево, если скролл на 0
+//                        deleteSymbol()
+//                    }
+//                }
+//            }
+//            false
+//        }
 
         fun isScrolledToStart(scrollView: HorizontalScrollView): Boolean {
             return scrollView.scrollX == 0
