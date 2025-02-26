@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="ButtonStyle">
-        <item name="android:layout_width">82dp</item>
-        <item name="android:layout_height">82dp</item>
+        <item name="android:layout_width">80dp</item>
+        <item name="android:layout_height">80dp</item>
         <item name="android:layout_gravity">center</item>
-        <item name="android:textSize">36sp</item>
+        <item name="android:textSize">34sp</item>
         <item name="android:padding">0dp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>

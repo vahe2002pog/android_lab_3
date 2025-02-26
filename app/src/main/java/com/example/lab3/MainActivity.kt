@@ -181,7 +181,9 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
-        else return
+        else if(op != "-") {
+            expression = expression.dropLast(4)
+        } else return
 
         appendExpression("")
         currentInput = ""
