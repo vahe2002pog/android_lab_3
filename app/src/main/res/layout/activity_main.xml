@@ -57,8 +57,8 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:paddingEnd="24dp"
-                    android:paddingStart="24dp"
+                    android:paddingStart="22dp"
+                    android:paddingEnd="22dp"
                     android:rotation="-180"
                     android:scrollHorizontally="true"
                     android:text="0"
@@ -245,7 +245,7 @@
                         android:id="@+id/button5_1"
                         style="@style/ButtonDarkGray"
                         android:gravity="start|center_vertical"
-                        android:paddingStart="34dp"
+                        android:paddingStart="30dp"
                         android:text="0" />
                 </FrameLayout>
 
