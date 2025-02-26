@@ -126,6 +126,7 @@ class MainActivity : AppCompatActivity() {
     private fun appendNumber(number: String) {
         if (isResultDisplayed) {
             expression = ""
+            currentInput = ""
             isResultDisplayed = false
         }
         appendExpression("")
@@ -143,21 +144,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun appendDecimal() {
         if (isResultDisplayed) {
-            currentInput = expression
-            appendResult(expression)
             isResultDisplayed = false
-        } else if (!currentInput.contains(".") && !currentInput.contains("%") && currentInput.contains(Regex("\\d+"))) {
+        }
+        if (!currentInput.contains(".") && !currentInput.contains("%") && currentInput.contains(Regex("\\d+"))) {
             currentInput += "."
             expression += "."
+            appendExpression("")
         }
-        appendExpression("")
         appendResult(expression)
     }
 
     private fun appendOperator(op: String) {
         if (isResultDisplayed) {
-            currentInput = expression
-            appendResult(expression)
             isResultDisplayed = false
         }
 
@@ -194,8 +192,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun appendPercent() {
         if (isResultDisplayed) {
-            currentInput = expression
-            appendResult(expression)
             isResultDisplayed = false
         }
         if (currentInput.isNotEmpty() && currentInput != "0"  && !currentInput.contains("%")  && currentInput.contains(Regex("\\d+"))) {
@@ -236,6 +232,7 @@ class MainActivity : AppCompatActivity() {
 
             appendExpression(expression)
             expression = result.stripTrailingZeros().toPlainString()
+            currentInput = expression
 
             appendResult(expression)
 
@@ -294,7 +291,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun appendResult(result: String) {
         resultTextView.text = result.replace(".", ",").replace("*", "×").replace("/", "÷")
-        resultTextView.textSize = when (result.length) {
+        resultTextView.textSize = when (result.replace(" ", "").length) {
             in 0..5 -> 80f
             in 6..10 -> 56f
             else -> 36f
