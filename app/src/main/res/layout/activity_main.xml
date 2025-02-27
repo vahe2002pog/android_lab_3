@@ -97,7 +97,7 @@
                     <Button
                         android:id="@+id/button1_2"
                         style="@style/ButtonGray"
-                        android:text="⁺⁄₋" />
+                        android:text="⁺⁄˗" />
                 </FrameLayout>
 
                 <FrameLayout style="@style/ButtonFrame">
