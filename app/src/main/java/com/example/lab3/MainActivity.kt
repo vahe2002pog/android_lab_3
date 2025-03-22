@@ -239,10 +239,10 @@ class MainActivity : AppCompatActivity() {
             appendResult(expression)
 
             isResultDisplayed = true
-        } catch (e: ArithmeticException) {
-            appendExpression("Ошибка: деление на 0")
         } catch (e: Exception) {
-            appendExpression("Ошибка")
+            appendExpression(expression)
+            expression = "О"
+            appendResult(expression)
         }
     }
 
@@ -292,15 +292,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun appendResult(result: String) {
-        resultTextView.text = result.replace(".", ",").replace("*", "×").replace("/", "÷")
-        resultTextView.textSize = when (result.replace(" ", "").length) {
+        resultTextView.text = result.replace(".", ",").replace("*", "×").replace("/", "÷").replace("О", "Ошибка")
+        val text = resultTextView.text.toString()
+        resultTextView.textSize = when (text.replace(" ", "").length) {
             in 0..5 -> 80f
             in 6..10 -> 56f
             else -> 36f
         }
     }
     private fun appendExpression(text: String) {
-        expressionTextView.text = text.replace(".", ",").replace("*", "×").replace("/", "÷")
+        expressionTextView.text = text.replace(".", ",").replace("*", "×").replace("/", "÷").replace("О", "Ошибка")
     }
 
     private fun resetCalculator() {
